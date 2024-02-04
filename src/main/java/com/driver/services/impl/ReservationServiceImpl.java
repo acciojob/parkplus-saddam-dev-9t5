@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class ReservationServiceImpl implements ReservationService {
@@ -23,7 +24,62 @@ public class ReservationServiceImpl implements ReservationService {
     ParkingLotRepository parkingLotRepository3;
     @Override
     public Reservation reserveSpot(Integer userId, Integer parkingLotId, Integer timeInHours, Integer numberOfWheels) throws Exception {
-        Reservation reservation = new Reservation();
+        //Reservation reservation = new Reservation();
+        Optional<User> optionalUser = userRepository3.findById(userId);
+        if(!optionalUser.isPresent()) {
+            throw new Exception("Cannot make reservation");
+        }
+        User user = optionalUser.get();
+
+        Optional<ParkingLot> optionalParkingLot = parkingLotRepository3.findById(parkingLotId);
+        if(!optionalParkingLot.isPresent()) {
+            throw new Exception("Cannot make reservation");
+        }
+        ParkingLot parkingLot = optionalParkingLot.get();
+
+        SpotType spotType = SpotType.OTHERS;
+        if(numberOfWheels == 2) spotType = SpotType.TWO_WHEELER;
+        else if(numberOfWheels == 4) spotType = SpotType.FOUR_WHEELER;
+
+        List<Spot> spotList = parkingLot.getSpotList();
+        // get spot for given vehicle
+        Spot reserveSpot = null;
+        for (Spot spot: spotList) {
+            if(spotType.equals(spot.getSpotType()) && spot.getOccupied() == Boolean.FALSE) {
+                reserveSpot = spot;
+                break;
+            }
+        }
+
+        if(reserveSpot == null) {
+            if(spotType.equals(SpotType.TWO_WHEELER)) {
+                for (Spot spot: spotList) {
+                    if(SpotType.FOUR_WHEELER.equals(spot.getSpotType()) && spot.getOccupied() == Boolean.FALSE) {
+                        reserveSpot = spot;
+                        break;
+                    }
+                }
+            }
+            for (Spot spot: spotList) {
+                if(SpotType.OTHERS.equals(spot.getSpotType()) && spot.getOccupied() == Boolean.FALSE) {
+                    reserveSpot = spot;
+                    break;
+                }
+            }
+        }
+
+        if(reserveSpot == null) {
+            throw new Exception("Cannot make reservation");
+        }
+
+        reserveSpot.setOccupied(Boolean.TRUE);
+
+        Reservation reservation = new Reservation(timeInHours);
+        reservation.setSpot(reserveSpot);
+        reservation.setUser(user);
+        reservation.setNumberOfHours(timeInHours);
+        reservation = reservationRepository3.save(reservation);
+
         return reservation;
     }
 }
