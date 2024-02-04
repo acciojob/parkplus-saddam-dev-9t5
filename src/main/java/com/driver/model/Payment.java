@@ -60,4 +60,9 @@ public class Payment {
     public void setReservation(Reservation reservation) {
         this.reservation = reservation;
     }
+
+    public boolean isPaymentCompleted() {
+        return paymentCompleted;
+    }
+
 }
