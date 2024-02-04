@@ -17,17 +17,22 @@ public class UserServiceImpl implements UserService {
     @Override
     public void deleteUser(Integer userId) {
         Optional<User> optionalUser = userRepository4.findById(userId);
-        User user = optionalUser.get();
-        userRepository4.delete(user);
+        if(optionalUser.isPresent()) {
+            User user = optionalUser.get();
+            userRepository4.delete(user);
+        }
         return;
     }
 
     @Override
     public User updatePassword(Integer userId, String password) {
+        User user = new User();
         Optional<User> optionalUser = userRepository4.findById(userId);
-        User user = optionalUser.get();
-        user.setPassword(password);
-        user = userRepository4.save(user);
+        if(optionalUser.isPresent()) {
+            user = optionalUser.get();
+            user.setPassword(password);
+            user = userRepository4.save(user);
+        }
         return user;
     }
 

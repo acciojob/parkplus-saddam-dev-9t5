@@ -37,37 +37,47 @@ public class ParkingLotServiceImpl implements ParkingLotService {
         Spot spot = new Spot(spotType, pricePerHour, Boolean.FALSE);
 
         Optional<ParkingLot> optionalParkingLot = parkingLotRepository1.findById(parkingLotId);
-        ParkingLot parkingLot = optionalParkingLot.get();
-        spot.setParkingLot(parkingLot);
-
-        spot = spotRepository1.save(spot);
+        if(optionalParkingLot.isPresent()) {
+            ParkingLot parkingLot = optionalParkingLot.get();
+            spot.setParkingLot(parkingLot);
+            spot = spotRepository1.save(spot);
+        }
         return spot;
     }
 
     @Override
     public void deleteSpot(int spotId) {
         Optional<Spot> optionalSpot = spotRepository1.findById(spotId);
-        Spot spot = optionalSpot.get();
-        spotRepository1.delete(spot);
+        if(optionalSpot.isPresent()) {
+            Spot spot = optionalSpot.get();
+            spotRepository1.delete(spot);
+        }
         return;
     }
 
     @Override
     public Spot updateSpot(int parkingLotId, int spotId, int pricePerHour) {
+        Spot spot = new Spot();
         Optional<ParkingLot> optionalParkingLot = parkingLotRepository1.findById(parkingLotId);
-        ParkingLot parkingLot = optionalParkingLot.get();
-        Optional<Spot> optionalSpot = spotRepository1.findByIdAndParkingLot();
-        Spot spot = optionalSpot.get();
-        spot.setPricePerHour(pricePerHour);
-        spot = spotRepository1.save(spot);
+        if(optionalParkingLot.isPresent()) {
+            ParkingLot parkingLot = optionalParkingLot.get();
+            Optional<Spot> optionalSpot = spotRepository1.findByIdAndParkingLot(spotId, parkingLot);
+            if(optionalSpot.isPresent()) {
+                spot = optionalSpot.get();
+                spot.setPricePerHour(pricePerHour);
+                spot = spotRepository1.save(spot);
+            }
+        }
         return spot;
     }
 
     @Override
     public void deleteParkingLot(int parkingLotId) {
         Optional<ParkingLot> optionalParkingLot = parkingLotRepository1.findById(parkingLotId);
-        ParkingLot parkingLot = optionalParkingLot.get();
-        parkingLotRepository1.delete(parkingLot);
+        if(optionalParkingLot.isPresent()) {
+            ParkingLot parkingLot = optionalParkingLot.get();
+            parkingLotRepository1.delete(parkingLot);
+        }
         return;
     }
 }

@@ -21,40 +21,40 @@ public class PaymentServiceImpl implements PaymentService {
 
     @Override
     public Payment pay(Integer reservationId, int amountSent, String mode) throws Exception {
-        Optional<Reservation> optionalReservation = reservationRepository2.findById(reservationId);
-        Reservation reservation = optionalReservation.get();
-
-        // Check payment balance
-
-        Spot spot = reservation.getSpot();
-        int pricePerHours = spot.getPricePerHour();
-        int timeInHours = reservation.getNumberOfHours();
-        int paymentAmount = pricePerHours*timeInHours;
-        if(amountSent < paymentAmount) {
-            throw new Exception("Insufficient Amount");
-        }
-
-        // Check Payment Mode
-        PaymentMode paymentMode = null;
-        if(mode.toUpperCase().equals("UPI")) {
-            paymentMode = PaymentMode.UPI;
-        }else if(mode.toUpperCase().equals("CARD")) {
-            paymentMode = PaymentMode.CARD;
-        }else if(mode.toUpperCase().equals("CASH")) {
-            paymentMode = PaymentMode.CASH;
-        }
-        if(paymentMode == null) {
-            throw new Exception("Payment mode not detected");
-        }
-
-        // Create payment
-
         Payment payment = new Payment();
-        payment.setPaymentMode(paymentMode);
-        payment.setPaymentCompleted(Boolean.TRUE);
-        payment.setReservation(reservation);
+        Optional<Reservation> optionalReservation = reservationRepository2.findById(reservationId);
+        if(optionalReservation.isPresent()) {
+            Reservation reservation = optionalReservation.get();
 
-        payment = paymentRepository2.save(payment);
+            // Check payment balance
+            Spot spot = reservation.getSpot();
+            int pricePerHours = spot.getPricePerHour();
+            int timeInHours = reservation.getNumberOfHours();
+            int paymentAmount = pricePerHours*timeInHours;
+            if(amountSent < paymentAmount) {
+                throw new Exception("Insufficient Amount");
+            }
+
+            // Check Payment Mode
+            PaymentMode paymentMode = null;
+            if(mode.equalsIgnoreCase("UPI")) {
+                paymentMode = PaymentMode.UPI;
+            }else if(mode.equalsIgnoreCase("CARD")) {
+                paymentMode = PaymentMode.CARD;
+            }else if(mode.equalsIgnoreCase("CASH")) {
+                paymentMode = PaymentMode.CASH;
+            }
+            if(paymentMode == null) {
+                throw new Exception("Payment mode not detected");
+            }
+
+            // Create payment
+            payment.setPaymentMode(paymentMode);
+            payment.setPaymentCompleted(Boolean.TRUE);
+            payment.setReservation(reservation);
+            payment = paymentRepository2.save(payment);
+        }
+
         return payment;
     }
 }

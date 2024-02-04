@@ -37,40 +37,7 @@ public class ReservationServiceImpl implements ReservationService {
         }
         ParkingLot parkingLot = optionalParkingLot.get();
 
-        SpotType spotType = SpotType.OTHERS;
-        if(numberOfWheels == 2) spotType = SpotType.TWO_WHEELER;
-        else if(numberOfWheels == 4) spotType = SpotType.FOUR_WHEELER;
-
-        List<Spot> spotList = parkingLot.getSpotList();
-        // get spot for given vehicle
-        Spot reserveSpot = null;
-        for (Spot spot: spotList) {
-            if(spotType.equals(spot.getSpotType()) && spot.getOccupied() == Boolean.FALSE) {
-                reserveSpot = spot;
-                break;
-            }
-        }
-
-        if(reserveSpot == null) {
-            if(spotType.equals(SpotType.TWO_WHEELER)) {
-                for (Spot spot: spotList) {
-                    if(SpotType.FOUR_WHEELER.equals(spot.getSpotType()) && spot.getOccupied() == Boolean.FALSE) {
-                        reserveSpot = spot;
-                        break;
-                    }
-                }
-            }
-            for (Spot spot: spotList) {
-                if(SpotType.OTHERS.equals(spot.getSpotType()) && spot.getOccupied() == Boolean.FALSE) {
-                    reserveSpot = spot;
-                    break;
-                }
-            }
-        }
-
-        if(reserveSpot == null) {
-            throw new Exception("Cannot make reservation");
-        }
+        Spot reserveSpot = getSpot(numberOfWheels, parkingLot);
 
         reserveSpot.setOccupied(Boolean.TRUE);
 
@@ -81,5 +48,51 @@ public class ReservationServiceImpl implements ReservationService {
         reservation = reservationRepository3.save(reservation);
 
         return reservation;
+    }
+
+    private static Spot getSpot(Integer numberOfWheels, ParkingLot parkingLot) throws Exception {
+        SpotType spotType = SpotType.OTHERS;
+        if(numberOfWheels == 2) spotType = SpotType.TWO_WHEELER;
+        else if(numberOfWheels == 4) spotType = SpotType.FOUR_WHEELER;
+
+        List<Spot> spotList = parkingLot.getSpotList();
+        // get spot for given vehicle
+        Spot reserveSpot = null;
+        int minPrice = Integer.MAX_VALUE;
+        for (Spot spot: spotList) {
+            if(spotType.equals(spot.getSpotType()) && spot.getOccupied() == Boolean.FALSE) {
+                if(spot.getPricePerHour() < minPrice) {
+                    reserveSpot = spot;
+                    minPrice = spot.getPricePerHour();
+                }
+
+            }
+        }
+
+        if(reserveSpot == null) {
+            if(spotType.equals(SpotType.TWO_WHEELER)) {
+                for (Spot spot: spotList) {
+                    if(SpotType.FOUR_WHEELER.equals(spot.getSpotType()) && spot.getOccupied() == Boolean.FALSE) {
+                        if(spot.getPricePerHour() < minPrice) {
+                            reserveSpot = spot;
+                            minPrice = spot.getPricePerHour();
+                        }
+                    }
+                }
+            }
+            for (Spot spot: spotList) {
+                if(SpotType.OTHERS.equals(spot.getSpotType()) && spot.getOccupied() == Boolean.FALSE) {
+                    if(spot.getPricePerHour() < minPrice) {
+                        reserveSpot = spot;
+                        minPrice = spot.getPricePerHour();
+                    }
+                }
+            }
+        }
+
+        if(reserveSpot == null) {
+            throw new Exception("Cannot make reservation");
+        }
+        return reserveSpot;
     }
 }
