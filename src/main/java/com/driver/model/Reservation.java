@@ -12,12 +12,6 @@ public class Reservation {
 
     private int numberOfHours;
 
-//    private User user;
-//
-//    private Spot spot;
-//
-//    private Payment payment;
-
     @JoinColumn
     @ManyToOne
     private User user;
@@ -26,8 +20,7 @@ public class Reservation {
     @ManyToOne
     private Spot spot;
 
-    @JoinColumn
-    @OneToOne
+    @OneToOne(mappedBy = "reservation", cascade = CascadeType.ALL)
     private Payment payment;
 
     public Reservation() {
