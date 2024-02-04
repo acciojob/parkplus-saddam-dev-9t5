@@ -52,10 +52,13 @@ public class PaymentServiceImpl implements PaymentService {
             payment.setPaymentMode(paymentMode);
             payment.setPaymentCompleted(Boolean.TRUE);
             payment.setReservation(reservation);
-            paymentRepository2.save(payment);
-            payment.setReservation(null);
+            payment = paymentRepository2.save(payment);
         }
 
-        return payment;
+        Payment newPayment = new Payment();
+        newPayment.setPaymentMode(payment.getPaymentMode());
+        newPayment.setPaymentCompleted(payment.getPaymentCompleted());
+        newPayment.setId(payment.getId());
+        return newPayment;
     }
 }
